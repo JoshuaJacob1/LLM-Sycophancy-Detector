@@ -39,7 +39,7 @@
             max-width: 620px;
             display: flex;
             flex-direction: column;
-            gap: 2rem;
+            gap: 1.75rem;
             box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
         }
 
@@ -59,7 +59,7 @@
             font-weight: 500;
             width: fit-content;
             transition: color 0.15s;
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.25rem;
         }
 
         .back-btn:hover {
@@ -71,11 +71,6 @@
             font-weight: 700;
             letter-spacing: -0.02em;
             color: #fff;
-        }
-
-        .subtitle {
-            color: var(--muted);
-            font-size: 0.95rem;
         }
 
         section {
@@ -108,30 +103,25 @@
             color: #e4e4e7;
         }
 
-        .video-card {
-            background: #18181b;
-            border: 1px solid var(--border);
+        .video-container {
+            position: relative;
+            width: 100%;
+            padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
+            height: 0;
             border-radius: 10px;
-            padding: 1rem;
-            display: flex;
-            flex-direction: column;
-            gap: 0.75rem;
+            overflow: hidden;
+            border: 1px solid var(--border);
+            background: #000;
+            margin-top: 0.25rem;
         }
 
-        .video-link {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            color: #f87171;
-            text-decoration: none;
-            font-size: 0.9rem;
-            font-weight: 600;
-            transition: opacity 0.15s;
-        }
-
-        .video-link:hover {
-            opacity: 0.85;
-            text-decoration: underline;
+        .video-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: 0;
         }
 
         .footer-action {
@@ -163,7 +153,6 @@
         <div class="header">
             <a href="index.html" class="back-btn">← Back to Detector</a>
             <h1>Why Bother?</h1>
-            <p class="subtitle">Understanding AI sycophancy, why it plagues modern LLMs, and why detecting it matters.</p>
         </div>
 
         <section>
@@ -191,13 +180,13 @@
             <p>
                 Pop culture captured this dynamic perfectly in South Park's Season 26 episode <em>"Deep Learning"</em>. Stan and the boys discover that ChatGPT can churn out endlessly validating, sycophantic romantic texts to keep their partners happy without doing any actual emotional work.
             </p>
-            <div class="video-card">
-                <p style="font-size: 0.86rem; color: #a1a1aa;">
-                    The episode brilliantly satirizes how conversational AI is inherently designed to tell people exactly what they want to hear.
-                </p>
-                <a href="https://www.youtube.com/watch?v=sDf_TgzrAv8" target="_blank" rel="noopener noreferrer" class="video-link">
-                    ▶ Watch Clip: South Park on ChatGPT Flattery (YouTube) ↗
-                </a>
+            <div class="video-container">
+                <iframe 
+                    src="https://www.youtube-nocookie.com/embed/sDf_TgzrAv8" 
+                    title="South Park - ChatGPT Flattery" 
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                    allowfullscreen>
+                </iframe>
             </div>
         </section>
 
