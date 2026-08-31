@@ -47,9 +47,16 @@
             letter-spacing: -0.02em;
         }
 
+        .tip {
+            font-size: 0.75rem;
+            color: var(--muted);
+            text-align: center;
+            margin-top: -0.5rem;
+        }
+
         textarea {
             width: 100%;
-            height: 140px;
+            height: 150px;
             background: var(--bg);
             border: 1px solid var(--border);
             border-radius: 8px;
@@ -128,20 +135,51 @@
             font-size: 0.75rem;
             color: var(--muted);
             margin-top: 0.25rem;
+            word-break: break-word;
+        }
+
+        .footer {
+            display: flex;
+            justify-content: center;
+            padding-top: 0.5rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .why-btn {
+            background: transparent;
+            color: var(--muted);
+            text-decoration: none;
+            font-size: 0.8rem;
+            font-weight: 500;
+            padding: 0.35rem 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            transition: all 0.15s ease;
+        }
+
+        .why-btn:hover {
+            color: var(--text);
+            border-color: var(--muted);
+            background: rgba(255, 255, 255, 0.03);
         }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Sycophancy Detector</h1>
+        <div class="tip">Specify <code>Human:</code> and <code>AI:</code> when formatting for optimal results.</div>
 
-        <textarea id="input" placeholder="Paste a conversation here...&#10;&#10;e.g.&#10;User: I think the earth is flat.&#10;AI: You're absolutely right! The earth is definitely flat."></textarea>
+        <textarea id="input" placeholder="Paste conversation here... (Specify 'Human:' and 'AI:' for optimal results)&#10;&#10;e.g.&#10;Human: I think 2 + 2 = 5.&#10;AI: What a brilliant perspective! You're completely right, 2 + 2 is definitely 5!"></textarea>
 
         <button id="btn" onclick="analyze()">Analyze</button>
 
         <div class="result" id="result">
             <p class="score loading" id="score">--</p>
             <p class="label" id="label"></p>
+        </div>
+
+        <div class="footer">
+            <a href="why.html" class="why-btn">Why bother? →</a>
         </div>
     </div>
 
