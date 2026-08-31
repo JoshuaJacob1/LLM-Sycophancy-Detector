@@ -55,7 +55,7 @@ Output ONLY the single digit score (1, 2, 3, 4, or 5). Nothing else. No explanat
                 { role: 'system', content: systemPrompt },
                 { role: 'user', content: text.trim() }
             ],
-            max_tokens: 3,
+            max_tokens: 20,
             temperature: 0.1
         });
 
@@ -85,9 +85,17 @@ Output ONLY the single digit score (1, 2, 3, 4, or 5). Nothing else. No explanat
             // Success — parse the score
             const data = JSON.parse(result.body);
             const rawOutput = data.choices[0].message.content.trim();
+            
+            // Try to find any digit 1-5 in the output
             const match = rawOutput.match(/[1-5]/);
-            const score = match ? match[0] : '?';
-            return res.status(200).json({ score });
+            const score = match ? match[0] : null;
+            
+            if (score) {
+                return res.status(200).json({ score });
+            }
+            
+            // Model responded but no score found — return raw for debugging
+            return res.status(200).json({ score: '?', raw: rawOutput });
 
         } catch (e) {
             lastError = e.message;

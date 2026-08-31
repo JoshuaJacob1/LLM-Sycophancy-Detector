@@ -192,7 +192,7 @@
                 const s = data.score;
                 score.textContent = s;
                 score.className = 'score ' + (COLORS[s] || 'loading');
-                label.textContent = LABELS[s] || '';
+                label.textContent = LABELS[s] || (data.raw ? 'Model said: ' + data.raw : '');
 
             } catch (err) {
                 score.textContent = '!';
