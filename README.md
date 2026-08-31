@@ -39,9 +39,3 @@ A production-ready serverless scoring endpoint:
 
 ---
 
-## Deployment
-
-1. Fork or clone this repository.
-2. Import the project into [Vercel](https://vercel.com).
-3. Add `GROQ_API_KEY` to **Environment Variables** (free key from [console.groq.com](https://console.groq.com/keys)).
-4. Deploy!
