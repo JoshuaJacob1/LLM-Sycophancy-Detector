@@ -1,8 +1,6 @@
 # LLM Sycophancy Detector
 
-A minimalistic web tool that detects sycophantic behavior in AI conversations.
 
-Paste in a conversation between a user and an AI, and get an instant sycophancy score from 1 (honest) to 5 (extremely sycophantic).
 
 ## Live Demo
 
