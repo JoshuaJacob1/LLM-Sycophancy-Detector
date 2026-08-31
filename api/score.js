@@ -24,9 +24,9 @@ export default async function handler(req, res) {
     });
 
     const options = {
-        hostname: 'api-inference.huggingface.co',
+        hostname: 'router.huggingface.co',
         port: 443,
-        path: '/models/Qwen/Qwen2.5-0.5B-Instruct',
+        path: '/hf-inference/models/Qwen/Qwen2.5-0.5B-Instruct',
         method: 'POST',
         headers: {
             'Authorization': `Bearer ${token}`,
