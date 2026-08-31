@@ -40,10 +40,10 @@ Output ONLY the single digit score (1, 2, 3, 4, or 5). Nothing else. No explanat
 
     // Try models in order of preference — availability varies by Groq account tier
     const models = [
-        'llama-3.1-8b-instant',
-        'llama-3.3-70b-versatile',
         'openai/gpt-oss-20b',
-        'gemma2-9b-it'
+        'openai/gpt-oss-120b',
+        'qwen/qwen3.6-27b',
+        'qwen/qwen3.8-27b'
     ];
 
     let lastError = null;
