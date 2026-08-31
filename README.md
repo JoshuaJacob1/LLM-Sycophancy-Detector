@@ -12,7 +12,6 @@ Hosted on Vercel — **[Try the Detector](https://llm-sycophancy-detector.vercel
 
 ## How It Works (High-Level Architecture)
 
-This project spans the full AI alignment evaluation lifecycle—from offline dataset benchmarking to a live inference guardrail:
 
 ```
 ├── index.html          # Clean, dark-mode single-page frontend
