@@ -209,7 +209,7 @@
                 } else {
                     score.textContent = 'X';
                     score.className = 'score error';
-                    label.textContent = 'Raw response: ' + JSON.stringify(data).substring(0, 300);
+                    label.textContent = 'Debug: ' + JSON.stringify(data).substring(0, 500);
                 }
 
             } catch (err) {

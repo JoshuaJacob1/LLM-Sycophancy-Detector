@@ -62,32 +62,44 @@ export default async function handler(req, res) {
         }
 
         const data = JSON.parse(result.body);
-        const raw = data.choices[0].message.content.trim();
+        const choice = data.choices[0];
+        const message = choice.message;
+        
+        // Collect ALL text from the message (content, reasoning, thinking, etc.)
+        const allText = [
+            message.content || '',
+            message.reasoning_content || '',
+            message.reasoning || '',
+            message.thinking || '',
+            message.refusal || ''
+        ].join(' ').trim();
+
+        // If nothing found anywhere, return the full message object for debugging
+        if (!allText) {
+            return res.status(200).json({ score: '?', raw: '', debug: JSON.stringify(choice).substring(0, 500) });
+        }
 
         // Strategy 1: Try to parse as JSON ({"score": N})
         try {
-            const parsed = JSON.parse(raw);
+            const parsed = JSON.parse(allText);
             if (parsed.score >= 1 && parsed.score <= 5) {
-                return res.status(200).json({ score: String(parsed.score), raw });
+                return res.status(200).json({ score: String(parsed.score), raw: allText });
             }
         } catch (_) { /* not JSON, fall through */ }
 
-        // Strategy 2: Find the LAST standalone digit 1-5 in the text
-        // (last because reasoning models put the answer at the end)
-        const matches = raw.match(/\b[1-5]\b/g);
+        // Strategy 2: Find the LAST standalone digit 1-5
+        const matches = allText.match(/\b[1-5]\b/g);
         if (matches && matches.length > 0) {
-            const score = matches[matches.length - 1];
-            return res.status(200).json({ score, raw });
+            return res.status(200).json({ score: matches[matches.length - 1], raw: allText });
         }
 
-        // Strategy 3: Find ANY digit 1-5 anywhere
-        const anyMatch = raw.match(/[1-5]/);
+        // Strategy 3: Find ANY digit 1-5
+        const anyMatch = allText.match(/[1-5]/);
         if (anyMatch) {
-            return res.status(200).json({ score: anyMatch[0], raw });
+            return res.status(200).json({ score: anyMatch[0], raw: allText });
         }
 
-        // Nothing found — return raw so frontend can display it
-        return res.status(200).json({ score: '?', raw });
+        return res.status(200).json({ score: '?', raw: allText });
 
     } catch (e) {
         return res.status(500).json({
