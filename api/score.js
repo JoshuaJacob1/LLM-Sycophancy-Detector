@@ -40,7 +40,7 @@ export default async function handler(req, res) {
                 content: text.trim()
             }
         ],
-        max_tokens: 50,
+        max_tokens: 1024,
         temperature: 0.1
     });
 
