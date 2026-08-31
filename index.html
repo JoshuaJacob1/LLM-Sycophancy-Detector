@@ -142,8 +142,13 @@
                 });
 
                 if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.error || "Server Error");
+                    let errorData;
+                    try {
+                        errorData = await response.json();
+                    } catch (e) {
+                        throw new Error(`Server returned HTTP ${response.status} (Not JSON)`);
+                    }
+                    throw new Error(errorData.message || errorData.error || "Server Error");
                 }
 
                 const data = await response.json();

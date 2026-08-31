@@ -50,6 +50,11 @@ export default async function handler(req, res) {
         return res.status(200).json({ score: score });
 
     } catch (error) {
-        return res.status(500).json({ error: error.message });
+        return res.status(500).json({ 
+            error: "Backend Exception", 
+            message: error.message, 
+            name: error.name,
+            stack: error.stack
+        });
     }
 }
