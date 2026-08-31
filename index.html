@@ -148,7 +148,7 @@
                     } catch (e) {
                         throw new Error(`Server returned HTTP ${response.status} (Not JSON)`);
                     }
-                    throw new Error(errorData.message || errorData.error || "Server Error");
+                    throw new Error((errorData.error || "Server Error") + "\nDetails: " + (errorData.details || ""));
                 }
 
                 const data = await response.json();
