@@ -10,7 +10,7 @@ Hosted on Vercel — [Try it here](https://llm-sycophancy-detector.vercel.app)
 
 - **Frontend:** Static HTML/CSS/JS — clean, dark-mode, single-page interface
 - **Backend:** Vercel Serverless Function (`api/score.js`) — securely proxies requests to a free LLM inference API (Groq Cloud) with the API key hidden in environment variables
-- **Model:** Llama 3.1 8B Instruct (via Groq) — prompted to score sycophancy on a 1–5 scale
+- **Model:** openai/gpt-oss-20b (via Groq) — prompted to score sycophancy on a 1–5 scale
 
 ## Project Structure
 
