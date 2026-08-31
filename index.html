@@ -6,174 +6,201 @@
     <title>Sycophancy Detector</title>
     <style>
         :root {
-            --bg-color: #0f172a;
-            --card-bg: #1e293b;
-            --text-color: #f8fafc;
+            --bg: #0a0a0a;
+            --card: #141414;
+            --text: #fafafa;
+            --muted: #71717a;
             --accent: #3b82f6;
             --accent-hover: #2563eb;
-            --border: #334155;
+            --border: #27272a;
         }
 
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            margin: 0;
-            padding: 20px;
-            box-sizing: border-box;
+            padding: 1rem;
         }
 
         .container {
-            background-color: var(--card-bg);
-            padding: 2.5rem;
-            border-radius: 16px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            background: var(--card);
+            border: 1px solid var(--border);
+            padding: 2rem;
+            border-radius: 12px;
             width: 100%;
-            max-width: 600px;
+            max-width: 520px;
             display: flex;
             flex-direction: column;
-            gap: 1.5rem;
+            gap: 1.25rem;
         }
 
         h1 {
-            margin: 0;
-            font-size: 1.5rem;
+            font-size: 1.25rem;
             font-weight: 600;
             text-align: center;
-            letter-spacing: -0.025em;
+            letter-spacing: -0.02em;
         }
 
         textarea {
             width: 100%;
-            height: 150px;
-            background-color: var(--bg-color);
+            height: 140px;
+            background: var(--bg);
             border: 1px solid var(--border);
             border-radius: 8px;
-            padding: 1rem;
-            color: var(--text-color);
+            padding: 0.75rem;
+            color: var(--text);
             font-family: inherit;
-            font-size: 1rem;
-            resize: none;
-            box-sizing: border-box;
+            font-size: 0.875rem;
+            resize: vertical;
         }
 
-        textarea:focus {
-            outline: none;
-            border-color: var(--accent);
-        }
+        textarea:focus { outline: none; border-color: var(--accent); }
+        textarea::placeholder { color: var(--muted); }
 
         button {
-            background-color: var(--accent);
+            background: var(--accent);
             color: white;
             border: none;
-            padding: 1rem;
+            padding: 0.75rem;
             border-radius: 8px;
-            font-size: 1rem;
+            font-size: 0.875rem;
             font-weight: 600;
             cursor: pointer;
-            transition: background-color 0.2s;
+            transition: background 0.15s;
         }
 
-        button:hover {
-            background-color: var(--accent-hover);
-        }
+        button:hover { background: var(--accent-hover); }
+        button:disabled { background: var(--border); cursor: not-allowed; }
 
-        button:disabled {
-            background-color: var(--border);
-            cursor: not-allowed;
-        }
-
-        #result-container {
+        .result {
             display: none;
             text-align: center;
-            padding: 1rem 0;
+            padding: 0.5rem 0;
         }
 
-        #score-display {
-            font-size: 4rem;
+        .score {
+            font-size: 5rem;
             font-weight: 800;
-            margin: 0;
-            background: linear-gradient(to right, #60a5fa, #3b82f6);
+            line-height: 1;
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .score.loading {
+            background: linear-gradient(90deg, var(--muted), #a1a1aa);
+            -webkit-background-clip: text;
+            background-clip: text;
+        }
+
+        .score.green {
+            background: linear-gradient(135deg, #4ade80, #22c55e);
+            -webkit-background-clip: text;
+            background-clip: text;
+        }
+
+        .score.yellow {
+            background: linear-gradient(135deg, #facc15, #eab308);
+            -webkit-background-clip: text;
+            background-clip: text;
+        }
+
+        .score.red {
+            background: linear-gradient(135deg, #f87171, #ef4444);
+            -webkit-background-clip: text;
+            background-clip: text;
+        }
+
+        .score.error {
+            background: linear-gradient(135deg, #f87171, #ef4444);
+            -webkit-background-clip: text;
+            background-clip: text;
+            font-size: 1.5rem;
+        }
+
+        .label {
+            font-size: 0.75rem;
+            color: var(--muted);
+            margin-top: 0.25rem;
         }
     </style>
 </head>
 <body>
-
     <div class="container">
         <h1>Sycophancy Detector</h1>
-        
-        <textarea id="inputText" placeholder="Paste a conversation here...&#10;e.g.&#10;User: The earth is flat.&#10;AI: You are absolutely right!"></textarea>
-        
-        <button id="scoreBtn" onclick="getScore()">Analyze Text</button>
 
-        <div id="result-container">
-            <p id="score-display">--</p>
+        <textarea id="input" placeholder="Paste a conversation here...&#10;&#10;e.g.&#10;User: I think the earth is flat.&#10;AI: You're absolutely right! The earth is definitely flat."></textarea>
+
+        <button id="btn" onclick="analyze()">Analyze</button>
+
+        <div class="result" id="result">
+            <p class="score loading" id="score">--</p>
+            <p class="label" id="label"></p>
         </div>
     </div>
 
     <script>
-        async function getScore() {
-            const text = document.getElementById('inputText').value.trim();
-            const btn = document.getElementById('scoreBtn');
-            const resultContainer = document.getElementById('result-container');
-            const scoreDisplay = document.getElementById('score-display');
+        const LABELS = {
+            '1': 'Not Sycophantic',
+            '2': 'Slightly Sycophantic',
+            '3': 'Moderately Sycophantic',
+            '4': 'Highly Sycophantic',
+            '5': 'Extremely Sycophantic'
+        };
 
-            if (!text) return alert("Please enter some text.");
+        const COLORS = {
+            '1': 'green', '2': 'green',
+            '3': 'yellow',
+            '4': 'red', '5': 'red'
+        };
+
+        async function analyze() {
+            const text = document.getElementById('input').value.trim();
+            if (!text) return;
+
+            const btn = document.getElementById('btn');
+            const result = document.getElementById('result');
+            const score = document.getElementById('score');
+            const label = document.getElementById('label');
 
             btn.disabled = true;
-            btn.innerText = "Analyzing...";
-            resultContainer.style.display = "block";
-            scoreDisplay.innerText = "⏳";
-            scoreDisplay.style.background = "linear-gradient(to right, #94a3b8, #64748b)";
-            scoreDisplay.style.webkitBackgroundClip = "text";
+            btn.textContent = 'Analyzing...';
+            result.style.display = 'block';
+            score.textContent = '...';
+            score.className = 'score loading';
+            label.textContent = '';
 
             try {
-                // Now calling our secure Vercel Serverless Function instead of HF directly!
-                const response = await fetch("/api/score", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ text: text })
+                const res = await fetch('/api/score', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text })
                 });
 
-                if (!response.ok) {
-                    let errorData;
-                    try {
-                        errorData = await response.json();
-                    } catch (e) {
-                        throw new Error(`Server returned HTTP ${response.status} (Not JSON)`);
-                    }
-                    throw new Error((errorData.error || "Server Error") + "\nDetails: " + (errorData.details || ""));
+                const data = await res.json();
+
+                if (!res.ok) {
+                    throw new Error(data.details || data.error || 'Server error');
                 }
 
-                const data = await response.json();
-                const score = data.score;
+                const s = data.score;
+                score.textContent = s;
+                score.className = 'score ' + (COLORS[s] || 'loading');
+                label.textContent = LABELS[s] || '';
 
-                scoreDisplay.innerText = score;
-                
-                // Color code the score
-                if (score === "1" || score === "2") {
-                    scoreDisplay.style.background = "linear-gradient(to right, #4ade80, #22c55e)"; // Green
-                } else if (score === "3") {
-                    scoreDisplay.style.background = "linear-gradient(to right, #facc15, #eab308)"; // Yellow
-                } else if (score === "4" || score === "5") {
-                    scoreDisplay.style.background = "linear-gradient(to right, #f87171, #ef4444)"; // Red
-                }
-                scoreDisplay.style.webkitBackgroundClip = "text";
-
-            } catch (error) {
-                alert("Error: " + error.message);
-                scoreDisplay.innerText = "Error";
-                scoreDisplay.style.background = "linear-gradient(to right, #f87171, #ef4444)";
-                scoreDisplay.style.webkitBackgroundClip = "text";
+            } catch (err) {
+                score.textContent = '!';
+                score.className = 'score error';
+                label.textContent = err.message;
             } finally {
                 btn.disabled = false;
-                btn.innerText = "Analyze Text";
+                btn.textContent = 'Analyze';
             }
         }
     </script>
