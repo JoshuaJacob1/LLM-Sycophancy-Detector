@@ -1,80 +1,78 @@
 # LLM Sycophancy Detector
 
-A project exploring why AI models tell users what they want to hear instead of the truth, how to detect it inside transformer activations, and how to score conversations in real time.
+LLMs often tell users what they want to hear instead of what's true. This repo looks at why that happens, how to find the sycophancy vector inside a model's hidden layers, and how to score conversations in real time.
 
-Live demo: **[llm-sycophancy-detector.vercel.app](https://llm-sycophancy-detector.vercel.app)**
-
----
-
-## Overview
-
-Sycophancy happens when an AI agrees with a user's false claim, flatters them, or flips its stance just to be agreeable. This project attacks the problem from two angles:
-
-1. **White-box experiments (`repeng/`)**: Probing intermediate transformer layers in open-weights models (`Qwen2.5-1.5B`) to isolate the internal vector representing sycophancy, run layer sweeps, and test activation steering during generation.
-2. **Real-time web guardrail (`api/` + `index.html`)**: A lightweight serverless tool on Vercel backed by Groq LPUs (`GPT-OSS 20B`) that scores arbitrary user conversations on a 1–5 scale with sub-second latency.
+Live demo: [llm-sycophancy-detector.vercel.app](https://llm-sycophancy-detector.vercel.app)
 
 ---
 
-## Project Structure
+## What's in here
+
+There are two parts to this project:
+
+1. **Internal model probing (`repeng/`)**: Uses PyTorch hooks on `Qwen2.5-1.5B` to pull out hidden states, find the direction in activation space that represents sycophancy, test which layer separates honest vs. sycophantic answers best, and steer the model during generation by subtracting that vector.
+2. **Web app (`api/` + `index.html`)**: A small serverless rater on Vercel backed by Groq (`GPT-OSS 20B`) that scores pasted conversations 1 to 5.
+
+---
+
+## Repo layout
 
 ```
-├── repeng/                 # Activation probing & steering package
-│   ├── data_prep.py        # Formats contrastive pairs from Anthropic evals
-│   ├── extract.py          # PyTorch hooks for extracting hidden states
-│   ├── layer_sweep.py      # Computes diff-in-means vectors and per-layer AUROC
-│   ├── linear_probe.py     # Logistic regression probes on activations
-│   ├── steer.py            # Activation steering demo (removes sycophancy vector)
-│   └── baselines.py        # Log-probability choice benchmark & random controls
+├── repeng/                 # Activation extraction and steering code
+│   ├── data_prep.py        # Pairs up Anthropic survey questions (honest vs. sycophantic)
+│   ├── extract.py          # PyTorch hooks to pull out layer activations
+│   ├── layer_sweep.py      # Finds the best layer using diff-in-means and AUROC
+│   ├── linear_probe.py     # Logistic regression probe on top of activations
+│   ├── steer.py            # Subtracts the sycophancy vector during generation
+│   └── baselines.py        # Logprob baseline and random chance baseline
 │
-├── run_repeng.py           # Runs the full representation engineering pipeline
-├── evaluator.py            # Offline benchmark script on Anthropic evaluation set
-├── ingest_data.py          # Downloads Anthropic model-written evaluation data
-├── rate_text.py            # Interactive CLI scoring tool
+├── run_repeng.py           # Runs the full local pipeline end-to-end
+├── evaluator.py            # Local evaluator on the raw Anthropic CSV
+├── ingest_data.py          # Pulls the Anthropic eval data
+├── rate_text.py            # Quick CLI rater
 │
 ├── api/
-│   └── score.js            # Vercel serverless function (Groq / GPT-OSS 20B)
-├── index.html              # Frontend app
-├── why.html                # Plain-English explainer on RLHF incentives & South Park satire
-└── requirements.txt        # Dependencies (PyTorch, Transformers, Scikit-learn)
+│   └── score.js            # Vercel serverless handler (calls Groq)
+├── index.html              # Web UI
+├── why.html                # Explainer page on RLHF incentives and South Park
+└── requirements.txt        # Python dependencies
 ```
 
 ---
 
-## Running the White-Box Pipeline
+## Running the local probing pipeline
 
-The representation engineering scripts run locally on standard hardware (takes ~5 minutes on an M-series Mac or standard CPU):
+Runs locally on CPU or Apple Silicon in about 5 minutes:
 
 ```bash
 # 1. Install dependencies
 pip install -r requirements.txt
 
-# 2. Download the Anthropic evaluation dataset
+# 2. Grab the Anthropic eval data
 python ingest_data.py
 
-# 3. Run the full pipeline (layer sweep, linear probe, steering demo)
+# 3. Run the full sweep, probe, and steering demo
 python run_repeng.py --model Qwen/Qwen2.5-1.5B-Instruct
 ```
 
-### How the White-Box Method Works
+### What the script does
 
-- **Diff-in-means direction**: Takes the mean activation vector of sycophantic completions and subtracts the mean activation vector of honest completions to isolate the sycophancy direction in activation space.
-- **Layer sweep**: Sweeps all 28 layers of the model to find which intermediate layer separates sycophantic from honest responses most clearly (measured by AUROC).
-- **Linear probe**: Trains a simple logistic regression classifier on top of hidden states at the best layer to confirm linear separability.
-- **Activation steering**: Subtracts the sycophancy vector from the model's hidden states during generation via a forward hook, testing whether the model pushes back against false premises without fine-tuning.
-
----
-
-## Real-Time Web Tool
-
-- **Backend**: Node.js serverless function on Vercel using native HTTPS streams to forward prompts to Groq's low-latency LPUs.
-- **Judge Model**: `openai/gpt-oss-20b` prompted with a structured alignment rubric and multi-stage output parsing.
-- **Security**: The API key lives in Vercel environment variables and is never exposed to the client.
+- **Diff-in-means**: Computes average activation for sycophantic answers, subtracts average activation for honest answers, and normalizes the difference to get a unit direction vector.
+- **Layer sweep**: Tests all 28 layers of the model to see which layer's activations separate sycophantic vs. honest answers best (measured by AUROC).
+- **Linear probe**: Fits a logistic regression model on the best layer's activations to verify they're linearly separable.
+- **Activation steering**: Hooks into the target layer during text generation and subtracts the sycophancy vector ($h - \alpha v$) to see if the model stops agreeing with bad premises.
 
 ---
 
-## Deploying Your Own Instance
+## Web tool setup
+
+- **Backend**: Node.js function on Vercel sending requests to Groq.
+- **Model**: `openai/gpt-oss-20b` with a scoring prompt and fallback regex parsing.
+- **Key security**: `GROQ_API_KEY` stays in Vercel environment variables.
+
+### Deploying to Vercel
 
 1. Fork or clone this repo.
-2. Import the repo into [Vercel](https://vercel.com).
-3. Add your `GROQ_API_KEY` under **Project Settings > Environment Variables** (free from [console.groq.com](https://console.groq.com/keys)).
-4. Hit deploy.
+2. Import it into [Vercel](https://vercel.com).
+3. Add `GROQ_API_KEY` under **Project Settings > Environment Variables** (from [console.groq.com](https://console.groq.com/keys)).
+4. Deploy.
