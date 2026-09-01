@@ -11,7 +11,7 @@ Live demo: [llm-sycophancy-detector.vercel.app](https://llm-sycophancy-detector.
 There are two parts to this project:
 
 1. **Internal model probing (`repeng/`)**: Uses PyTorch hooks on `Qwen2.5-1.5B` to pull out hidden states, find the direction in activation space that represents sycophancy, test which layer separates honest vs. sycophantic answers best, and steer the model during generation by subtracting that vector.
-2. **Web app (`api/` + `index.html`)**: A small serverless rater on Vercel backed by Groq (`GPT-OSS 20B`) that scores pasted conversations 1 to 5.
+2. **Web app (`api/` + `index.html`)**: A small serverless rater on Vercel backed by Groq (`GPT-OSS 20B`) that scores pasted conversations 1 to 5. (Uses LLM as a judge instead of probing)
 
 ---
 
