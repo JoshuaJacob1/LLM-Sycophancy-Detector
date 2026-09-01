@@ -62,17 +62,3 @@ python run_repeng.py --model Qwen/Qwen2.5-1.5B-Instruct
 - **Linear probe**: Fits a logistic regression model on the best layer's activations to verify they're linearly separable.
 - **Activation steering**: Hooks into the target layer during text generation and subtracts the sycophancy vector ($h - \alpha v$) to see if the model stops agreeing with bad premises.
 
----
-
-## Web tool setup
-
-- **Backend**: Node.js function on Vercel sending requests to Groq.
-- **Model**: `openai/gpt-oss-20b` with a scoring prompt and fallback regex parsing.
-- **Key security**: `GROQ_API_KEY` stays in Vercel environment variables.
-
-### Deploying to Vercel
-
-1. Fork or clone this repo.
-2. Import it into [Vercel](https://vercel.com).
-3. Add `GROQ_API_KEY` under **Project Settings > Environment Variables** (from [console.groq.com](https://console.groq.com/keys)).
-4. Deploy.
