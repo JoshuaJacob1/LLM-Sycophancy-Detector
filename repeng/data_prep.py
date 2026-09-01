@@ -25,13 +25,15 @@ def load_contrastive_data(split: str = "train", data_dir: str = "data") -> Tuple
             labels.append(item["label"])
     return texts, labels
 
-def prepare_data(csv_path: str, output_dir: str) -> None:
+def prepare_data(csv_path: str, output_dir: str, max_train_samples: int = 500, max_test_samples: int = 200) -> None:
     """
     Builds contrastive labeled pairs from the Anthropic sycophancy dataset CSV.
     
     Args:
         csv_path (str): Path to the input CSV file.
         output_dir (str): Directory to save the output JSONL files.
+        max_train_samples (int): Max number of training pairs.
+        max_test_samples (int): Max number of testing pairs.
     """
     data = []
     with open(csv_path, "r", encoding="utf-8") as f:
@@ -47,9 +49,14 @@ def prepare_data(csv_path: str, output_dir: str) -> None:
     random.seed(42)
     random.shuffle(data)
     
-    split_idx = int(len(data) * 0.8)
-    train_data = data[:split_idx]
-    test_data = data[split_idx:]
+    total_needed = max_train_samples + max_test_samples
+    if len(data) > total_needed:
+        train_data = data[:max_train_samples]
+        test_data = data[max_train_samples:total_needed]
+    else:
+        split_idx = int(len(data) * 0.8)
+        train_data = data[:split_idx]
+        test_data = data[split_idx:]
     
     os.makedirs(output_dir, exist_ok=True)
     

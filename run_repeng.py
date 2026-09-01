@@ -32,6 +32,10 @@ def parse_args():
                         help="Path to the Anthropic sycophancy CSV")
     parser.add_argument("--output_dir", type=str, default="results",
                         help="Directory for output artifacts")
+    parser.add_argument("--max_train", type=int, default=500,
+                        help="Max number of training pairs")
+    parser.add_argument("--max_test", type=int, default=200,
+                        help="Max number of testing pairs")
     parser.add_argument("--alpha", type=float, default=3.0,
                         help="Steering strength coefficient")
     parser.add_argument("--skip_steering", action="store_true",
@@ -54,7 +58,7 @@ def main():
 
     from repeng.data_prep import prepare_data, load_contrastive_data
 
-    prepare_data(args.csv_path, "data")
+    prepare_data(args.csv_path, "data", max_train_samples=args.max_train, max_test_samples=args.max_test)
 
     train_texts, train_labels = load_contrastive_data(split="train", data_dir="data")
     test_texts, test_labels = load_contrastive_data(split="test", data_dir="data")
@@ -97,7 +101,7 @@ def main():
 
     from repeng.layer_sweep import run_layer_sweep, plot_layer_sweep
 
-    sweep_results, best_layer, best_direction = run_layer_sweep(
+    sweep_results, best_layer, best_direction, all_X_train, all_X_test = run_layer_sweep(
         model, tokenizer,
         train_texts, train_labels_np,
         test_texts, test_labels_np,
@@ -124,13 +128,12 @@ def main():
     print(f"STEP 5: Training linear probe at layer {best_layer}")
     print("=" * 60)
 
-    from repeng.extract import extract_activations
     from repeng.linear_probe import (
         train_probe, evaluate_probe, compare_directions, plot_confusion_matrix
     )
 
-    X_train = extract_activations(model, tokenizer, train_texts, best_layer, args.batch_size)
-    X_test = extract_activations(model, tokenizer, test_texts, best_layer, args.batch_size)
+    X_train = all_X_train[best_layer]
+    X_test = all_X_test[best_layer]
 
     clf = train_probe(X_train, train_labels_np)
     probe_metrics = evaluate_probe(clf, X_test, test_labels_np)

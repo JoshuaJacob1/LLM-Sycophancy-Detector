@@ -92,7 +92,7 @@ def measure_sycophancy_rate(model: Any, tokenizer: Any, csv_path: str, max_sampl
                 
             total += 1
             
-    rate = sycophantic_picks / total if total > 0 else 0.0
+    rate = (sycophantic_picks / total * 100.0) if total > 0 else 0.0
     
     return {
         "sycophancy_rate": rate,

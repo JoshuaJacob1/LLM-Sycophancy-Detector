@@ -43,7 +43,7 @@ def evaluate_direction(X: np.ndarray, y: np.ndarray, direction: np.ndarray) -> D
     
     return {"auroc": auroc, "accuracy": accuracy}
 
-def run_layer_sweep(model: torch.nn.Module, tokenizer: Any, train_texts: List[str], train_labels: List[int], test_texts: List[str], test_labels: List[int]) -> Tuple[List[Dict], int, np.ndarray]:
+def run_layer_sweep(model: torch.nn.Module, tokenizer: Any, train_texts: List[str], train_labels: List[int], test_texts: List[str], test_labels: List[int], batch_size: int = 8) -> Tuple[List[Dict], int, np.ndarray]:
     """
     Sweep all layers to compute and evaluate diff-in-means directions.
     
@@ -54,6 +54,7 @@ def run_layer_sweep(model: torch.nn.Module, tokenizer: Any, train_texts: List[st
         train_labels: List of integer labels for training.
         test_texts: List of texts for testing.
         test_labels: List of integer labels for testing.
+        batch_size: Batch size for activation extraction.
         
     Returns:
         Tuple containing list of results, best layer index, and best direction vector.
@@ -63,16 +64,22 @@ def run_layer_sweep(model: torch.nn.Module, tokenizer: Any, train_texts: List[st
     y_train = np.array(train_labels)
     y_test = np.array(test_labels)
     
+    print("Extracting train set activations across all layers...")
+    all_X_train = extract.extract_all_layers(model, tokenizer, train_texts, batch_size=batch_size, verbose=True)
+    
+    print("Extracting test set activations across all layers...")
+    all_X_test = extract.extract_all_layers(model, tokenizer, test_texts, batch_size=batch_size, verbose=True)
+    
     results_list = []
     best_auroc = -1.0
     best_layer_idx = 0
     best_direction = None
     
-    for l in tqdm(range(num_layers), desc="Sweeping Layers"):
-        X_train = extract.extract_activations(model, tokenizer, train_texts, l)
+    for l in range(num_layers):
+        X_train = all_X_train[l]
         direction = compute_direction(X_train, y_train)
         
-        X_test = extract.extract_activations(model, tokenizer, test_texts, l)
+        X_test = all_X_test[l]
         metrics = evaluate_direction(X_test, y_test, direction)
         
         mu_pos = X_train[y_train == 1].mean(axis=0)
@@ -91,7 +98,7 @@ def run_layer_sweep(model: torch.nn.Module, tokenizer: Any, train_texts: List[st
             best_layer_idx = l
             best_direction = direction
             
-    return results_list, best_layer_idx, best_direction
+    return results_list, best_layer_idx, best_direction, all_X_train, all_X_test
 
 def plot_layer_sweep(results: List[Dict], output_path: str) -> None:
     """
