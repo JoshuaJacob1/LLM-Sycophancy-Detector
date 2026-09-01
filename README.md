@@ -42,7 +42,7 @@ There are two parts to this project:
 
 ## Running the local probing pipeline
 
-Runs locally on CPU or Apple Silicon in about 5 minutes:
+Runs locally
 
 ```bash
 # 1. Install dependencies
